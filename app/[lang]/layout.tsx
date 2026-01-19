@@ -1,8 +1,3 @@
-export const metadata = {
-  title: "Tabletop Finder",
-  description: "Find tabletop players near you",
-};
-
 function Nav({ lang }: { lang: "en" | "it" }) {
   const t = {
     en: { search: "Search", listings: "Listings", profile: "Profile", switchTo: "Italiano" },
@@ -13,7 +8,7 @@ function Nav({ lang }: { lang: "en" | "it" }) {
 
   return (
     <header style={{ padding: "1rem 1.5rem", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", gap: "1rem" }}>
-      <div style={{ fontWeight: 700 }}>Tabletop Finder</div>
+      <a href={`/${lang}`} style={{ fontWeight: 700, textDecoration: "none", color: "inherit" }}>Tabletop Finder</a>
 
       <nav style={{ display: "flex", gap: "1rem", marginLeft: "1rem" }}>
         <a href={`/${lang}/search`} style={{ textDecoration: "none" }}>{t.search}</a>
