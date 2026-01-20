@@ -8,27 +8,25 @@ function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, error: message }, { status });
 }
 
-// MVP geocoding: mappa città -> coordinate (poi mettiamo geocoding vero)
 function cityToCoords(q: string): { lat: number; lng: number } | null {
   const s = q.trim().toLowerCase();
 
   const map: Record<string, { lat: number; lng: number }> = {
-    "milano": { lat: 45.4642, lng: 9.19 },
-    "milan": { lat: 45.4642, lng: 9.19 },
-    "roma": { lat: 41.9028, lng: 12.4964 },
-    "rome": { lat: 41.9028, lng: 12.4964 },
-    "bologna": { lat: 44.4949, lng: 11.3426 },
-    "genova": { lat: 44.4056, lng: 8.9463 },
-    "genua": { lat: 44.4056, lng: 8.9463 },
-    "torino": { lat: 45.0703, lng: 7.6869 },
-    "turin": { lat: 45.0703, lng: 7.6869 },
-    "napoli": { lat: 40.8518, lng: 14.2681 },
-    "naples": { lat: 40.8518, lng: 14.2681 },
-    "firenze": { lat: 43.7696, lng: 11.2558 },
-    "florence": { lat: 43.7696, lng: 11.2558 },
+    milano: { lat: 45.4642, lng: 9.19 },
+    milan: { lat: 45.4642, lng: 9.19 },
+    roma: { lat: 41.9028, lng: 12.4964 },
+    rome: { lat: 41.9028, lng: 12.4964 },
+    bologna: { lat: 44.4949, lng: 11.3426 },
+    genova: { lat: 44.4056, lng: 8.9463 },
+    genua: { lat: 44.4056, lng: 8.9463 },
+    torino: { lat: 45.0703, lng: 7.6869 },
+    turin: { lat: 45.0703, lng: 7.6869 },
+    napoli: { lat: 40.8518, lng: 14.2681 },
+    naples: { lat: 40.8518, lng: 14.2681 },
+    firenze: { lat: 43.7696, lng: 11.2558 },
+    florence: { lat: 43.7696, lng: 11.2558 },
   };
 
-  // match semplice: se contiene il nome città
   for (const k of Object.keys(map)) {
     if (s.includes(k)) return map[k];
   }
@@ -36,14 +34,14 @@ function cityToCoords(q: string): { lat: number; lng: number } | null {
 }
 
 export async function POST(req: Request) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !serviceKey) {
-    return jsonError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY", 500);
+  if (!supabaseUrl || !anonKey) {
+    return jsonError("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY", 500);
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey);
+  const supabase = createClient(supabaseUrl, anonKey);
 
   const body = await req.json().catch(() => null);
   if (!body) return jsonError("Invalid JSON body");
@@ -76,4 +74,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ ok: true, results: data ?? [] });
 }
-
