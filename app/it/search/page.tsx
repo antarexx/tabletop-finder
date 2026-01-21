@@ -17,11 +17,10 @@ type Result = {
   distance_km: number;
 };
 
-function formatKm(km: number) {
-  if (!Number.isFinite(km)) return "—";
-  if (km < 1) return "< 1 km";
-  if (km < 10) return `${km.toFixed(1)} km`;
-  return `${Math.round(km)} km`;
+function formatDistanceKm(d: number | null | undefined) {
+  if (d === null || d === undefined || Number.isNaN(d)) return "—";
+  if (d < 1) return "< 1 km";
+  return `${Math.round(d * 10) / 10} km`;
 }
 
 export default function SearchPageIT() {
@@ -37,7 +36,7 @@ export default function SearchPageIT() {
     () => [
       { key: "RPG", label: "GDR" },
       { key: "BOARD", label: "Giochi da tavolo" },
-      { key: "CARDS", label: "Giochi di carte" },
+      { key: "CARDS", label: "Carte" },
       { key: "MINI", label: "Miniature" },
     ],
     []
@@ -95,7 +94,7 @@ export default function SearchPageIT() {
 
         <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 160px" }}>
           <div>
-            <strong>Località</strong>
+            <strong>Posizione</strong>
             <input
               value={locationText}
               onChange={(e) => setLocationText(e.target.value)}
@@ -138,7 +137,7 @@ export default function SearchPageIT() {
 
         <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center" }}>
           <button onClick={onSearch} disabled={loading || games.length === 0}>
-            {loading ? "Ricerca..." : "Cerca"}
+            {loading ? "Cerco..." : "Cerca"}
           </button>
           {error && <span style={{ color: "crimson" }}>{error}</span>}
         </div>
@@ -146,13 +145,13 @@ export default function SearchPageIT() {
 
       <section style={{ marginTop: 24 }}>
         <h2>Risultati</h2>
-        {results.length === 0 && !loading && <p>Nessun risultato per ora.</p>}
+        {results.length === 0 && !loading && <p>Nessun risultato ancora.</p>}
         <ul style={{ padding: 0, listStyle: "none", display: "grid", gap: 12 }}>
           {results.map((r) => (
             <li key={r.id} style={{ border: "1px solid #eee", padding: 14, borderRadius: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <strong>{r.title}</strong>
-                <span>{formatKm(r.distance_km)}</span>
+                <span>{formatDistanceKm(r.distance_km)}</span>
               </div>
               <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
                 {r.game_type} • {r.kind} • {r.city ?? "—"}
