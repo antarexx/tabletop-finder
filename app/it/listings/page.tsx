@@ -17,6 +17,12 @@ type Result = {
   distance_km: number;
 };
 
+function formatDistanceKm(d: number | null | undefined) {
+  if (d === null || d === undefined || Number.isNaN(d)) return "—";
+  if (d < 1) return "< 1 km";
+  return `${Math.round(d * 10) / 10} km`;
+}
+
 export default function ListingsPageIT() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -95,7 +101,7 @@ export default function ListingsPageIT() {
             <li key={r.id} style={{ border: "1px solid #eee", padding: 14, borderRadius: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <strong>{r.title}</strong>
-                <span>{Math.round((r.distance_km ?? 0) * 10) / 10} km</span>
+                <span>{formatDistanceKm(r.distance_km)}</span>
               </div>
 
               <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
