@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import ResultsMap, { type Result } from "@/app/components/ResultsMap";
+import ResultsMap from "@/app/components/ResultsMap";
+
 
 type GameKey = "RPG" | "BOARD" | "CARDS" | "MINI";
 type LookingFor = "players" | "groups" | "either";
