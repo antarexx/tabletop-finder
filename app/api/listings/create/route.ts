@@ -3,12 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 
 type GameKey = "RPG" | "BOARD" | "CARDS" | "MINI";
 type LookingFor = "players" | "groups" | "either";
-type KindKey = "private_user" | "group" | "public_place";
+type Kind = "private_user" | "group" | "public_place";
 
 function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, error: message }, { status });
 }
 
+// MVP coords: città -> coordinate
 function cityToCoords(q: string): { lat: number; lng: number } | null {
   const s = q.trim().toLowerCase();
 
@@ -34,41 +35,42 @@ function cityToCoords(q: string): { lat: number; lng: number } | null {
   return null;
 }
 
-function isOneOf<T extends string>(v: any, allowed: readonly T[]): v is T {
-  return typeof v === "string" && (allowed as readonly string[]).includes(v);
-}
-
 export async function POST(req: Request) {
+  // Server-side: usa service role per inserire (MVP)
   const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!supabaseUrl || !serviceKey) {
     return jsonError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY", 500);
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const supabase = createClient(supabaseUrl, serviceKey);
 
   const body = await req.json().catch(() => null);
   if (!body) return jsonError("Invalid JSON body");
 
-  const kind = body.kind as KindKey;
+  const kind = String(body.kind ?? "") as Kind;
+  const game_type = String(body.game_type ?? "") as GameKey;
+  const looking_for = String(body.looking_for ?? "") as LookingFor;
+
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
-  const gameType = body.gameType as GameKey;
-  const lookingFor = body.lookingFor as LookingFor;
   const city = String(body.city ?? "").trim();
-  const country = String(body.country ?? "IT").trim();
-  const isPublicPlace = Boolean(body.isPublicPlace ?? false);
+  const is_public_place = Boolean(body.is_public_place ?? false);
 
-  const allowedKinds = ["private_user", "group", "public_place"] as const;
-  const allowedGames = ["RPG", "BOARD", "CARDS", "MINI"] as const;
-  const allowedLooking = ["players", "groups", "either"] as const;
-
-  if (!isOneOf(kind, allowedKinds)) return jsonError("Invalid kind");
-  if (!title) return jsonError("Title required");
-  if (!isOneOf(gameType, allowedGames)) return jsonError("Invalid gameType");
-  if (!isOneOf(lookingFor, allowedLooking)) return jsonError("Invalid lookingFor");
-  if (!city) return jsonError("City required");
+  if (!["private_user", "group", "public_place"].includes(kind)) {
+    return jsonError("Invalid kind");
+  }
+  if (!["RPG", "BOARD", "CARDS", "MINI"].includes(game_type)) {
+    return jsonError("Invalid game_type");
+  }
+  if (!["players", "groups", "either"].includes(looking_for)) {
+    return jsonError("Invalid looking_for");
+  }
+  if (!title) return jsonError("Title is required");
+  if (title.length > 120) return jsonError("Title too long (max 120)");
+  if (description.length > 1000) return jsonError("Description too long (max 1000)");
+  if (!city) return jsonError("City is required");
 
   const coords = cityToCoords(city);
   if (!coords) {
@@ -77,23 +79,20 @@ export async function POST(req: Request) {
     );
   }
 
-  // Coerenza: se è luogo pubblico, kind deve essere public_place
-  const finalKind: KindKey = isPublicPlace ? "public_place" : kind;
-
-  const { data, error } = await supabase.rpc("create_listing", {
-    in_kind: finalKind,
-    in_title: title,
-    in_description: description,
-    in_game_type: gameType,
-    in_looking_for: lookingFor,
-    in_city: city,
-    in_country: country || "IT",
-    in_is_public_place: isPublicPlace,
-    in_lat: coords.lat,
-    in_lng: coords.lng,
+  // Inserimento: geog = geography(point,4326)
+  const { error } = await supabase.from("listings").insert({
+    kind,
+    title,
+    description: description || null,
+    game_type,
+    looking_for,
+    city,
+    country: "IT",
+    is_public_place,
+    geog: `POINT(${coords.lng} ${coords.lat})`,
   });
 
   if (error) return jsonError(error.message, 500);
 
-  return NextResponse.json({ ok: true, id: data });
+  return NextResponse.json({ ok: true });
 }
