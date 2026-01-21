@@ -17,7 +17,14 @@ type Result = {
   distance_km: number;
 };
 
-export default function SearchPageEN() {
+function formatKm(km: number) {
+  if (!Number.isFinite(km)) return "—";
+  if (km < 1) return "< 1 km";
+  if (km < 10) return `${km.toFixed(1)} km`;
+  return `${Math.round(km)} km`;
+}
+
+export default function SearchPageIT() {
   const [locationText, setLocationText] = useState("Milano");
   const [radiusKm, setRadiusKm] = useState(50);
   const [lookingFor, setLookingFor] = useState<LookingFor>("either");
@@ -28,10 +35,10 @@ export default function SearchPageEN() {
 
   const gameOptions: { key: GameKey; label: string }[] = useMemo(
     () => [
-      { key: "RPG", label: "RPG" },
-      { key: "BOARD", label: "Board games" },
-      { key: "CARDS", label: "Card games" },
-      { key: "MINI", label: "Miniatures" },
+      { key: "RPG", label: "GDR" },
+      { key: "BOARD", label: "Giochi da tavolo" },
+      { key: "CARDS", label: "Giochi di carte" },
+      { key: "MINI", label: "Miniature" },
     ],
     []
   );
@@ -53,11 +60,11 @@ export default function SearchPageEN() {
       });
 
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "Search failed");
+      if (!json.ok) throw new Error(json.error || "Ricerca fallita");
 
       setResults(json.results as Result[]);
     } catch (e: any) {
-      setError(e?.message ?? "Error");
+      setError(e?.message ?? "Errore");
     } finally {
       setLoading(false);
     }
@@ -65,12 +72,12 @@ export default function SearchPageEN() {
 
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <h1>Search</h1>
-      <p>Find players near you.</p>
+      <h1>Cerca</h1>
+      <p>Trova giocatori vicino a te.</p>
 
       <div style={{ border: "1px solid #ddd", padding: 16, borderRadius: 12 }}>
         <div style={{ marginBottom: 12 }}>
-          <strong>Game type</strong>
+          <strong>Tipo di gioco</strong>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
             {gameOptions.map((opt) => (
               <label key={opt.key} style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -83,25 +90,25 @@ export default function SearchPageEN() {
               </label>
             ))}
           </div>
-          {games.length === 0 && <div style={{ color: "crimson" }}>Select at least one.</div>}
+          {games.length === 0 && <div style={{ color: "crimson" }}>Seleziona almeno uno.</div>}
         </div>
 
         <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 160px" }}>
           <div>
-            <strong>Location</strong>
+            <strong>Località</strong>
             <input
               value={locationText}
               onChange={(e) => setLocationText(e.target.value)}
-              placeholder="City, ZIP code, or area"
+              placeholder="Città, CAP o zona"
               style={{ width: "100%", padding: 10, marginTop: 8 }}
             />
             <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
-              MVP: try Milano / Roma / Bologna / Genova / Torino / Napoli / Firenze
+              MVP: prova Milano / Roma / Bologna / Genova / Torino / Napoli / Firenze
             </div>
           </div>
 
           <div>
-            <strong>Radius</strong>
+            <strong>Raggio</strong>
             <select
               value={radiusKm}
               onChange={(e) => setRadiusKm(Number(e.target.value))}
@@ -117,39 +124,39 @@ export default function SearchPageEN() {
         </div>
 
         <div style={{ marginTop: 12 }}>
-          <strong>Looking for</strong>
+          <strong>Cerco</strong>
           <select
             value={lookingFor}
             onChange={(e) => setLookingFor(e.target.value as LookingFor)}
             style={{ width: 220, padding: 10, marginTop: 8 }}
           >
-            <option value="either">Either</option>
-            <option value="players">Players</option>
-            <option value="groups">Groups</option>
+            <option value="either">Entrambi</option>
+            <option value="players">Giocatori</option>
+            <option value="groups">Gruppi</option>
           </select>
         </div>
 
         <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center" }}>
           <button onClick={onSearch} disabled={loading || games.length === 0}>
-            {loading ? "Searching..." : "Search"}
+            {loading ? "Ricerca..." : "Cerca"}
           </button>
           {error && <span style={{ color: "crimson" }}>{error}</span>}
         </div>
       </div>
 
       <section style={{ marginTop: 24 }}>
-        <h2>Results</h2>
-        {results.length === 0 && !loading && <p>No results yet.</p>}
+        <h2>Risultati</h2>
+        {results.length === 0 && !loading && <p>Nessun risultato per ora.</p>}
         <ul style={{ padding: 0, listStyle: "none", display: "grid", gap: 12 }}>
           {results.map((r) => (
             <li key={r.id} style={{ border: "1px solid #eee", padding: 14, borderRadius: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <strong>{r.title}</strong>
-                <span>{r.distance_km} km</span>
+                <span>{formatKm(r.distance_km)}</span>
               </div>
               <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
                 {r.game_type} • {r.kind} • {r.city ?? "—"}
-                {r.is_public_place ? " • Public place" : " • Approx. area"}
+                {r.is_public_place ? " • Luogo pubblico" : " • Zona approssimata"}
               </div>
               {r.description && <p style={{ marginTop: 8 }}>{r.description}</p>}
             </li>
