@@ -1,27 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ResultsMap, { type Result } from "@/app/components/ResultsMap";
 
 type GameKey = "RPG" | "BOARD" | "CARDS" | "MINI";
 type LookingFor = "players" | "groups" | "either";
-
-type Result = {
-  id: string;
-  kind: string;
-  title: string;
-  description: string;
-  game_type: GameKey;
-  looking_for: LookingFor;
-  city: string | null;
-  is_public_place: boolean;
-  distance_km: number;
-};
-
-function formatDistanceKm(d: number | null | undefined) {
-  if (d === null || d === undefined || Number.isNaN(d)) return "—";
-  if (d < 1) return "< 1 km";
-  return `${Math.round(d * 10) / 10} km`;
-}
 
 export default function SearchPageIT() {
   const [locationText, setLocationText] = useState("Milano");
@@ -123,7 +106,7 @@ export default function SearchPageIT() {
         </div>
 
         <div style={{ marginTop: 12 }}>
-          <strong>Cerco</strong>
+          <strong>Cerchi</strong>
           <select
             value={lookingFor}
             onChange={(e) => setLookingFor(e.target.value as LookingFor)}
@@ -143,15 +126,19 @@ export default function SearchPageIT() {
         </div>
       </div>
 
+      {/* MAP */}
+      <ResultsMap results={results} centerQuery={locationText} lang="it" />
+
       <section style={{ marginTop: 24 }}>
         <h2>Risultati</h2>
         {results.length === 0 && !loading && <p>Nessun risultato ancora.</p>}
+
         <ul style={{ padding: 0, listStyle: "none", display: "grid", gap: 12 }}>
           {results.map((r) => (
             <li key={r.id} style={{ border: "1px solid #eee", padding: 14, borderRadius: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <strong>{r.title}</strong>
-                <span>{formatDistanceKm(r.distance_km)}</span>
+                <span>{Math.round(r.distance_km)} km</span>
               </div>
               <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
                 {r.game_type} • {r.kind} • {r.city ?? "—"}
