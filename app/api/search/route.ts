@@ -8,6 +8,7 @@ function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, error: message }, { status });
 }
 
+// MVP geocoding: city -> coords
 function cityToCoords(q: string): { lat: number; lng: number } | null {
   const s = q.trim().toLowerCase();
 
@@ -34,14 +35,14 @@ function cityToCoords(q: string): { lat: number; lng: number } | null {
 }
 
 export async function POST(req: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !anonKey) {
-    return jsonError("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY", 500);
+  if (!supabaseUrl || !serviceRoleKey) {
+    return jsonError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY", 500);
   }
 
-  const supabase = createClient(supabaseUrl, anonKey);
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   const body = await req.json().catch(() => null);
   if (!body) return jsonError("Invalid JSON body");
