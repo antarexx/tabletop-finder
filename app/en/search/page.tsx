@@ -17,6 +17,13 @@ type Result = {
   distance_km: number;
 };
 
+function formatKm(km: number) {
+  if (!Number.isFinite(km)) return "—";
+  if (km < 1) return "< 1 km";
+  if (km < 10) return `${km.toFixed(1)} km`;
+  return `${Math.round(km)} km`;
+}
+
 export default function SearchPageEN() {
   const [locationText, setLocationText] = useState("Milano");
   const [radiusKm, setRadiusKm] = useState(50);
@@ -145,7 +152,7 @@ export default function SearchPageEN() {
             <li key={r.id} style={{ border: "1px solid #eee", padding: 14, borderRadius: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <strong>{r.title}</strong>
-                <span>{r.distance_km} km</span>
+                <span>{formatKm(r.distance_km)}</span>
               </div>
               <div style={{ fontSize: 12, opacity: 0.8, marginTop: 4 }}>
                 {r.game_type} • {r.kind} • {r.city ?? "—"}
