@@ -20,26 +20,28 @@ const icon = new L.Icon({
 });
 
 export default function ResultsMap({ results }: { results: Result[] }) {
-  if (!results.length) return null;
+  if (!results || results.length === 0) return null;
 
   const center: [number, number] = [results[0].lat, results[0].lng];
 
   return (
-    <MapContainer center={center} zoom={11} style={{ height: 400, width: "100%" }}>
-      <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div style={{ border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
+      <MapContainer center={center} zoom={11} style={{ height: 380, width: "100%" }}>
+        <TileLayer
+          attribution="&copy; OpenStreetMap contributors"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      {results.map((r) => (
-        <Marker key={r.id} position={[r.lat, r.lng]} icon={icon}>
-          <Popup>
-            <strong>{r.title}</strong>
-            <br />
-            {r.city ?? "Approx. area"} – {r.distance_km} km
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+        {results.map((r) => (
+          <Marker key={r.id} position={[r.lat, r.lng]} icon={icon}>
+            <Popup>
+              <strong>{r.title}</strong>
+              <br />
+              {r.city ?? "Approx. area"} — {r.distance_km} km
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 }
